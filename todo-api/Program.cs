@@ -1,7 +1,35 @@
+
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using todo_data.Context;
+using todo_data.Repository;
+using todo_services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddTodoDbContext();
+builder.Services.AddBaseRepository();
+builder.Services.AddBaseService();
+builder.Services.AddControllers(options =>
+{
+    // Use JSON property names in validation errors
+    options.ModelMetadataDetailsProviders.Add(new SystemTextJsonValidationMetadataProvider());
+});
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(cors =>
+    {
+        cors.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+builder.Services.AddSingleton(new MemoryCache(new MemoryCacheOptions
+{
+    SizeLimit = 256
+}));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -14,31 +42,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors();
+app.MapControllers();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
+// Start the application
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// Make Program class visible
+public partial class Program { }

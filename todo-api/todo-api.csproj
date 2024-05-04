@@ -10,6 +10,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\todo-data\todo-data.csproj" />
+    <ProjectReference Include="..\todo-core\todo-core.csproj" />
+    <ProjectReference Include="..\todo-services\todo-services.csproj" />
   </ItemGroup>
 
 </Project>
