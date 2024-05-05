@@ -4,14 +4,16 @@ using Todo.Models;
 
 namespace todo_data.Context;
 
-public class TodoDbContext : DbContext
+public class TodoDbContext(DbContextOptions<TodoDbContext> options) : DbContext(options)
 {
-    public DbSet<Item> Items { get; set; }
+    // item
+    public virtual DbSet<Item> Items { get; set; }
     
-    public TodoDbContext(DbContextOptions<TodoDbContext> options) : base(options) { }
+    // ********** OnModelCreating **********
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{		
+		// item
+		modelBuilder.ApplyConfiguration(new ItemConfiguration());
+	}
 
-    protected override void OnModelCreating(ModelBuilder model)
-    {
-        model.ApplyConfiguration(new ItemConfiguration());
-    }
 }

@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -8,8 +7,14 @@ using todo_services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//builder.AddAppSettings();
+builder.Services.AddDbContext<TodoDbContext>(options => 
+options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnectionString"), b => b.MigrationsAssembly("todo-data"))
+);
+builder.Services.AddScoped<DbContext, TodoDbContext>();
+
 // Add services to the container.
-builder.Services.AddTodoDbContext();
+builder.Services.AddDataServices(); 
 builder.Services.AddBaseRepository();
 builder.Services.AddBaseService();
 builder.Services.AddControllers(options =>
@@ -42,12 +47,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseRouting();
 app.UseCors();
 app.MapControllers();
 
+// ef migrations
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<TodoDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
+        context.Database.Migrate();
+}
+
 // Start the application
 app.Run();
-
-// Make Program class visible
-public partial class Program { }
